@@ -6,4 +6,4 @@
 	$cmd =  "INSERT INTO `leaderboard` (`name`, `difficulty`, `score`) VALUES ('$name', '$difficulty', '$score')";
 	$action = $connection->prepare($cmd);
 	$action->execute();
-?> 
+?>

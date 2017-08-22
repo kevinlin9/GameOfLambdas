@@ -1,0 +1,678 @@
+<!DOCTYPE HTML>
+<!-- Kevin Lin -->
+<html onkeydown="checkKey(event);">
+
+<head>
+    <title>Game of Lambdas | Play</title>
+    <link rel="stylesheet" href="style.css" />
+    <style></style>
+    <script src="utilities.js"></script>
+    <script>
+        function initialize() {
+            LEFT = 37, UP = 38, RIGHT = 39, DOWN = 40;
+
+            settingsForm = document.getElementById("settings");
+            scoreNavigatorForm = document.getElementById("scoreNavigator");
+            nameInput = document.getElementById("nameInput");
+            submitDiv = document.getElementById("submit");
+            submitDiv.style.display = "none";
+            userScoreVar = document.getElementById("userScore");
+            playingField = document.getElementById("mainspace");
+
+            scoreArea = document.getElementById("scoreArea");
+            score = 0;
+            scoreArea.innerHTML = score;
+
+            playingField.style.width = (document.body.clientWidth * .8) + "px";
+            playingField.style.height = (document.body.clientHeight * .9) + "px";
+            playingFieldWidth = parseInt(playingField.style.width);
+            playingFieldHeight = parseInt(playingField.style.height);
+
+            gameDifficulty = "easy";
+            SLOW = 10;
+            FAST = 20;
+            SONIC = 30;
+            moveSpeed = SLOW;
+            playingField.innerHTML = "";
+            codeBlockArray = [];
+            lambdaBlockArray = [];
+            abstractionBlockArray = [];
+            recursionBlockArray = [];
+            bugBlockArray = [];
+            gameOver = true;
+            currentkey = 999999;
+            document.getElementById("startbutton").disabled = false;
+            settingsForm.style.display = "initial";
+        }
+
+        function setDifficulty(difficultyValue) {
+            gameDifficulty = difficultyValue;
+        }
+
+        function setMoveSpeed(difficultyValue) {
+            if (difficultyValue == "easy")
+                moveSpeed = SLOW;
+            else
+            if (difficultyValue == "medium")
+                moveSpeed = FAST;
+            else
+                moveSpeed = SONIC;
+        }
+
+        function startGame() {
+            if (nameInput.value == "memehax") {
+                bg = document.createElement("img");
+                bg.setAttribute("src", "images/bg.png");
+                bg.setAttribute("class", "bg");
+                playingField.appendChild(bg);
+            }
+            settingsForm.style.display = "none";
+            setMoveSpeed(gameDifficulty);
+            var codeBlock = new blockObj(playingFieldWidth / 2, playingFieldHeight / 2, "images/codeblock.png", codeBlockArray, 25);
+            playingField.appendChild(codeBlock.myImg);
+            codeBlockArray.push(codeBlock);
+            firstKeyPress = false;
+            gameOver = false;
+        }
+
+        function blockObj(x, y, imgSrc, arrayCategory, size = 25, moveStatus = true) {
+            this.xCoord = x;
+            this.yCoord = y;
+            this.idx = arrayCategory.length;
+            this.size = size;
+            if (moveStatus) {
+                this.move = function(directionEvent) {
+                    if (gameOver)
+                        return;
+                    if (directionEvent == LEFT) {
+                        this.pastX = this.xCoord;
+                        this.pastY = this.yCoord;
+                        this.xCoord -= moveSpeed;
+                    }
+                    if (directionEvent == RIGHT) {
+                        this.pastX = this.xCoord;
+                        this.pastY = this.yCoord;
+                        this.xCoord += moveSpeed;
+                    }
+                    if (directionEvent == UP) {
+                        this.pastX = this.xCoord;
+                        this.pastY = this.yCoord;
+                        this.yCoord -= moveSpeed;
+                    }
+                    if (directionEvent == DOWN) {
+                        this.pastX = this.xCoord;
+                        this.pastY = this.yCoord;
+                        this.yCoord += moveSpeed;
+                    }
+                }
+                if (this.idx > 0) {
+                    this.follow = function(previousBlock) {
+                        this.pastX = this.xCoord;
+                        this.pastY = this.yCoord;
+                        this.xCoord = previousBlock.pastX;
+                        this.yCoord = previousBlock.pastY;
+                    };
+                }
+
+            }
+
+            this.myImg = document.createElement("img");
+            this.myImg.setAttribute("src", imgSrc);
+            this.myImg.style.display = "inline-block";
+            this.myImg.style.position = "absolute";
+            this.myImg.style.left = this.xCoord + "px";
+            this.myImg.style.top = this.yCoord + "px";
+            this.myImg.style.width = size + "px";
+            this.myImg.style.height = size + "px";
+        }
+
+        function spawnObject() {
+            if (gameOver) {
+                clearInterval(Obstacles);
+            }
+            if (firstKeyPress) {
+                var objectNumber = getRandomInteger(0, 100);
+                var x = getRandomInteger(50, playingFieldWidth - 50)
+                var y = getRandomInteger(50, playingFieldHeight - 50)
+                if (objectNumber <= 30) {
+                    var spawnObj = new blockObj(x, y, "images/lambdablock.png", lambdaBlockArray, 25, false);
+                    lambdaBlockArray.push(spawnObj);
+                } else {
+                    if (objectNumber > 31 && objectNumber < 60) {
+                        var spawnObj = new blockObj(x, y, "images/bugblock.png", bugBlockArray, 25, false);
+                        bugBlockArray.push(spawnObj);
+                    } else {
+                        if (objectNumber >= 61 && objectNumber <= 90) {
+                            var spawnObj = new blockObj(x, y, "images/abstractionblock.png", abstractionBlockArray, 25, false);
+                            abstractionBlockArray.push(spawnObj);
+                        } else {
+                            var spawnObj = new blockObj(x, y, "images/recursionblock.png", recursionBlockArray, 25, false);
+                            recursionBlockArray.push(spawnObj);
+                        }
+                    }
+                }
+                playingField.appendChild(spawnObj.myImg);
+            }
+
+        }
+
+        function checkKey(e) {
+            if (currentkey != e.which && (e.which == LEFT || e.which == RIGHT || e.which == UP || e.which == DOWN)) {
+                if (firstKeyPress) {
+                    clearInterval(repeatMove);
+                } else {
+                    firstKeyPress = true;
+                    Obstacles = setInterval(spawnObject, 7000 / moveSpeed);
+                }
+
+                currentkey = e.which;
+                repeatMove = setInterval(function() {
+                    codeBlockArray[0].move(e.which);
+                    for (i = 1; i < codeBlockArray.length; i++) {
+                        codeBlockArray[i].follow(codeBlockArray[codeBlockArray[i].idx - 1]);
+                    }
+                    display();
+                    checkForCollisions();
+                    if (gameOver) {
+                        clearInterval(repeatMove);
+                        userScoreVar.value = score;
+                        display();
+                        return;
+                    }
+                }, 5000 / moveSpeed);
+            }
+        }
+
+        function display() {
+            for (i = 0; i < codeBlockArray.length; i++) {
+                codeBlockArray[i].myImg.style.left = codeBlockArray[i].xCoord + "px";
+                codeBlockArray[i].myImg.style.top = codeBlockArray[i].yCoord + "px";
+            }
+            scoreArea.innerHTML = score;
+            if (gameOver)
+                submitDiv.style.display = "initial";
+
+        }
+
+        function insideBlock(numCheck1, numCheck2, num1, num2, num3, num4) {
+            if ((numCheck1 >= num1 && numCheck1 <= num2) && (numCheck2 >= num3 && numCheck2 <= num4))
+                return true;
+            return false;
+        }
+
+        function blockEffect(type) {
+            if (type == "code" || type == "bug") {
+                gameOver = true;
+                return;
+            } else {
+                if (type == "lambda") {
+                    score += 500;
+                    if (currentkey == LEFT)
+                        var codeBlock = new blockObj(codeBlockArray[codeBlockArray.length - 1].xCoord + codeBlockArray[codeBlockArray.length - 1].size, codeBlockArray[codeBlockArray.length - 1].yCoord, "images/codeblock.png", codeBlockArray, 25);
+                    else
+                    if (currentkey == RIGHT)
+                        var codeBlock = new blockObj(codeBlockArray[codeBlockArray.length - 1].xCoord - codeBlockArray[codeBlockArray.length - 1].size, codeBlockArray[codeBlockArray.length - 1].yCoord, "images/codeblock.png", codeBlockArray, 25);
+                    else
+                    if (currentkey == UP)
+                        var codeBlock = new blockObj(codeBlockArray[codeBlockArray.length - 1].xCoord, codeBlockArray[codeBlockArray.length - 1].yCoord + codeBlockArray[codeBlockArray.length - 1].size, "images/codeblock.png", codeBlockArray, 25);
+                    else
+                        var codeBlock = new blockObj(codeBlockArray[codeBlockArray.length - 1].xCoord, codeBlockArray[codeBlockArray.length - 1].yCoord - codeBlockArray[codeBlockArray.length - 1].size, "images/codeblock.png", codeBlockArray, 25);
+                    playingField.appendChild(codeBlock.myImg);
+                    codeBlockArray.push(codeBlock);
+                } else {
+                    if (type == "abstraction") {
+                        score += 200;
+                        if (moveSpeed < 50)
+                            moveSpeed += 1;
+                        if (codeBlockArray.length == 1)
+                            return;
+                        playingField.removeChild(codeBlockArray.splice(codeBlockArray.length - 1, 1)[0].myImg);
+
+                    } else {
+                        var bugArrayLength = bugBlockArray.length;
+                        for (i = 0; i < bugArrayLength; i++) {
+                            playingField.removeChild(bugBlockArray.splice(0, 1)[0].myImg)
+                        }
+                    }
+                }
+            }
+        }
+
+        function checkForCollisions() {
+            if (currentkey == LEFT) {
+                if (codeBlockArray[0].xCoord < 0) {
+                    gameOver = true;
+                    return;
+                }
+                checkBlockCollisions(lambdaBlockArray);
+                checkBlockCollisions(bugBlockArray);
+                checkBlockCollisions(abstractionBlockArray);
+                checkBlockCollisions(recursionBlockArray);
+                checkBlockCollisions(codeBlockArray);
+                return;
+            }
+            if (currentkey == RIGHT) {
+                if (codeBlockArray[0].xCoord + codeBlockArray[0].size > playingFieldWidth) {
+                    gameOver = true;
+                    return;
+                }
+                checkBlockCollisions(lambdaBlockArray);
+                checkBlockCollisions(bugBlockArray);
+                checkBlockCollisions(abstractionBlockArray);
+                checkBlockCollisions(recursionBlockArray);
+                checkBlockCollisions(codeBlockArray);
+                return;
+            }
+            if (currentkey == UP) {
+                if (codeBlockArray[0].yCoord < 0) {
+                    gameOver = true;
+                    return;
+                }
+                checkBlockCollisions(lambdaBlockArray);
+                checkBlockCollisions(bugBlockArray);
+                checkBlockCollisions(abstractionBlockArray);
+                checkBlockCollisions(recursionBlockArray);
+                checkBlockCollisions(codeBlockArray);
+                return;
+            }
+            if (currentkey == DOWN) {
+                if (codeBlockArray[0].yCoord + codeBlockArray[0].size > playingFieldHeight) {
+                    gameOver = true;
+                    return;
+                }
+                checkBlockCollisions(lambdaBlockArray, playingField);
+                checkBlockCollisions(bugBlockArray, playingField);
+                checkBlockCollisions(abstractionBlockArray, playingField);
+                checkBlockCollisions(recursionBlockArray, playingField);
+                checkBlockCollisions(codeBlockArray, playingField);
+                return;
+            }
+
+        }
+
+        function checkBlockCollisions(arrayCategory) {
+            if (currentkey == LEFT) {
+                if (arrayCategory == codeBlockArray) {
+                    if (codeBlockArray.length <= 1)
+                        return;
+                    for (i = 1; i < arrayCategory.length; i++) {
+                        if (insideBlock(codeBlockArray[0].xCoord, codeBlockArray[0].yCoord, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                            playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                            blockEffect("code");
+                            return;
+                        }
+                        if (insideBlock(codeBlockArray[0].xCoord, codeBlockArray[0].yCoord + codeBlockArray[0].size, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                            playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                            blockEffect("code");
+                            return;
+                        }
+                    }
+                } else {
+                    if (arrayCategory == lambdaBlockArray) {
+                        for (i = 0; i < arrayCategory.length; i++) {
+                            if (insideBlock(codeBlockArray[0].xCoord, codeBlockArray[0].yCoord, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                                playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                                blockEffect("lambda");
+                                return;
+                            }
+                            if (insideBlock(codeBlockArray[0].xCoord, codeBlockArray[0].yCoord + codeBlockArray[0].size, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                                playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                                blockEffect("lambda");
+                                return;
+                            }
+                        }
+                    } else {
+                        if (arrayCategory == abstractionBlockArray) {
+                            for (i = 0; i < arrayCategory.length; i++) {
+                                if (insideBlock(codeBlockArray[0].xCoord, codeBlockArray[0].yCoord, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                                    playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                                    blockEffect("abstraction");
+                                    return;
+                                }
+                                if (insideBlock(codeBlockArray[0].xCoord, codeBlockArray[0].yCoord + codeBlockArray[0].size, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                                    playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                                    blockEffect("abstraction");
+                                    return;
+                                }
+                            }
+                        } else {
+                            if (arrayCategory == bugBlockArray) {
+                                for (i = 0; i < arrayCategory.length; i++) {
+                                    if (insideBlock(codeBlockArray[0].xCoord, codeBlockArray[0].yCoord, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                                        playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                                        blockEffect("bug");
+                                        return;
+                                    }
+                                    if (insideBlock(codeBlockArray[0].xCoord, codeBlockArray[0].yCoord + codeBlockArray[0].size, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                                        playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                                        blockEffect("bug");
+                                        return;
+                                    }
+                                }
+                            } else {
+                                for (i = 0; i < arrayCategory.length; i++) {
+                                    if (insideBlock(codeBlockArray[0].xCoord, codeBlockArray[0].yCoord, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                                        playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                                        blockEffect("recursion");
+                                        return;
+                                    }
+                                    if (insideBlock(codeBlockArray[0].xCoord, codeBlockArray[0].yCoord + codeBlockArray[0].size, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                                        playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                                        blockEffect("recursion");
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (currentkey == RIGHT) {
+                if (arrayCategory == codeBlockArray) {
+                    if (codeBlockArray.length <= 1)
+                        return;
+                    for (i = 1; i < arrayCategory.length; i++) {
+                        if (insideBlock(codeBlockArray[0].xCoord + codeBlockArray[0].size, codeBlockArray[0].yCoord, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                            playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                            blockEffect("code");
+                            return;
+                        }
+                        if (insideBlock(codeBlockArray[0].xCoord + codeBlockArray[0].size, codeBlockArray[0].yCoord + codeBlockArray[0].size, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                            playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                            blockEffect("code");
+                            return;
+                        }
+                    }
+                } else {
+                    if (arrayCategory == lambdaBlockArray) {
+                        for (i = 0; i < arrayCategory.length; i++) {
+                            if (insideBlock(codeBlockArray[0].xCoord + codeBlockArray[0].size, codeBlockArray[0].yCoord, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                                playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                                blockEffect("lambda");
+                                return;
+                            }
+                            if (insideBlock(codeBlockArray[0].xCoord + codeBlockArray[0].size, codeBlockArray[0].yCoord + codeBlockArray[0].size, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                                playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                                blockEffect("lambda");
+                                return;
+                            }
+                        }
+                    } else {
+                        if (arrayCategory == abstractionBlockArray) {
+                            for (i = 0; i < arrayCategory.length; i++) {
+                                if (insideBlock(codeBlockArray[0].xCoord + codeBlockArray[0].size, codeBlockArray[0].yCoord, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                                    playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                                    blockEffect("abstraction");
+                                    return;
+                                }
+                                if (insideBlock(codeBlockArray[0].xCoord + codeBlockArray[0].size, codeBlockArray[0].yCoord + codeBlockArray[0].size, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                                    playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                                    blockEffect("abstraction");
+                                    return;
+                                }
+                            }
+                        } else {
+                            if (arrayCategory == bugBlockArray) {
+                                for (i = 0; i < arrayCategory.length; i++) {
+                                    if (insideBlock(codeBlockArray[0].xCoord + codeBlockArray[0].size, codeBlockArray[0].yCoord, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                                        playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                                        blockEffect("bug");
+                                        return;
+                                    }
+                                    if (insideBlock(codeBlockArray[0].xCoord + codeBlockArray[0].size, codeBlockArray[0].yCoord + codeBlockArray[0].size, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                                        playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                                        blockEffect("bug");
+                                        return;
+                                    }
+                                }
+                            } else {
+                                for (i = 0; i < arrayCategory.length; i++) {
+                                    if (insideBlock(codeBlockArray[0].xCoord + codeBlockArray[0].size, codeBlockArray[0].yCoord, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                                        playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                                        blockEffect("recursion");
+                                        return;
+                                    }
+                                    if (insideBlock(codeBlockArray[0].xCoord + codeBlockArray[0].size, codeBlockArray[0].yCoord + codeBlockArray[0].size, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                                        playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                                        blockEffect("recursion");
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (currentkey == UP) {
+                if (arrayCategory == codeBlockArray) {
+                    if (codeBlockArray.length <= 1)
+                        return;
+                    for (i = 1; i < arrayCategory.length; i++) {
+                        if (insideBlock(codeBlockArray[0].xCoord, codeBlockArray[0].yCoord, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                            playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                            blockEffect("code");
+                            return;
+                        }
+                        if (insideBlock(codeBlockArray[0].xCoord + codeBlockArray[0].size, codeBlockArray[0].yCoord, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                            playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                            blockEffect("code");
+                            return;
+                        }
+                    }
+                } else {
+                    if (arrayCategory == lambdaBlockArray) {
+                        for (i = 0; i < arrayCategory.length; i++) {
+                            if (insideBlock(codeBlockArray[0].xCoord, codeBlockArray[0].yCoord, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                                playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                                blockEffect("lambda");
+                                return;
+                            }
+                            if (insideBlock(codeBlockArray[0].xCoord + codeBlockArray[0].size, codeBlockArray[0].yCoord, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                                playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                                blockEffect("lambda");
+                                return;
+                            }
+                        }
+                    } else {
+                        if (arrayCategory == abstractionBlockArray) {
+                            for (i = 0; i < arrayCategory.length; i++) {
+                                if (insideBlock(codeBlockArray[0].xCoord, codeBlockArray[0].yCoord, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                                    playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                                    blockEffect("abstraction");
+                                    return;
+                                }
+                                if (insideBlock(codeBlockArray[0].xCoord + codeBlockArray[0].size, codeBlockArray[0].yCoord, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                                    playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                                    blockEffect("abstraction");
+                                    return;
+                                }
+                            }
+                        } else {
+                            if (arrayCategory == bugBlockArray) {
+                                for (i = 0; i < arrayCategory.length; i++) {
+                                    if (insideBlock(codeBlockArray[0].xCoord, codeBlockArray[0].yCoord, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                                        playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                                        blockEffect("bug");
+                                        return;
+                                    }
+                                    if (insideBlock(codeBlockArray[0].xCoord + codeBlockArray[0].size, codeBlockArray[0].yCoord, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                                        playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                                        blockEffect("bug");
+                                        return;
+                                    }
+                                }
+                            } else {
+                                for (i = 0; i < arrayCategory.length; i++) {
+                                    if (insideBlock(codeBlockArray[0].xCoord, codeBlockArray[0].yCoord, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                                        playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                                        blockEffect("recursion");
+                                        return;
+                                    }
+                                    if (insideBlock(codeBlockArray[0].xCoord + codeBlockArray[0].size, codeBlockArray[0].yCoord, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                                        playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                                        blockEffect("recursion");
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (currentkey == DOWN) {
+                if (arrayCategory == codeBlockArray) {
+                    if (codeBlockArray.length <= 1)
+                        return;
+                    for (i = 1; i < arrayCategory.length; i++) {
+                        if (insideBlock(codeBlockArray[0].xCoord, codeBlockArray[0].yCoord + codeBlockArray[0].size, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                            playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                            blockEffect("code");
+                            return;
+                        }
+                        if (insideBlock(codeBlockArray[0].xCoord + codeBlockArray[0].size, codeBlockArray[0].yCoord + codeBlockArray[0].size, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                            playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                            blockEffect("code");
+                            return;
+                        }
+                    }
+                } else {
+                    if (arrayCategory == lambdaBlockArray) {
+                        for (i = 0; i < arrayCategory.length; i++) {
+                            if (insideBlock(codeBlockArray[0].xCoord, codeBlockArray[0].yCoord + codeBlockArray[0].size, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                                playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                                blockEffect("lambda");
+                                return;
+                            }
+                            if (insideBlock(codeBlockArray[0].xCoord + codeBlockArray[0].size, codeBlockArray[0].yCoord + codeBlockArray[0].size, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                                playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                                blockEffect("lambda");
+                                return;
+                            }
+                        }
+                    } else {
+                        if (arrayCategory == abstractionBlockArray) {
+                            for (i = 0; i < arrayCategory.length; i++) {
+                                if (insideBlock(codeBlockArray[0].xCoord, codeBlockArray[0].yCoord + codeBlockArray[0].size, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                                    playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                                    blockEffect("abstraction");
+                                    return;
+                                }
+                                if (insideBlock(codeBlockArray[0].xCoord + codeBlockArray[0].size, codeBlockArray[0].yCoord + codeBlockArray[0].size, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                                    playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                                    blockEffect("abstraction");
+                                    return;
+                                }
+                            }
+                        } else {
+                            if (arrayCategory == bugBlockArray) {
+                                for (i = 0; i < arrayCategory.length; i++) {
+                                    if (insideBlock(codeBlockArray[0].xCoord, codeBlockArray[0].yCoord + codeBlockArray[0].size, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                                        playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                                        blockEffect("bug");
+                                        return;
+                                    }
+                                    if (insideBlock(codeBlockArray[0].xCoord + codeBlockArray[0].size, codeBlockArray[0].yCoord + codeBlockArray[0].size, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                                        playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                                        blockEffect("bug");
+                                        return;
+                                    }
+                                }
+                            } else {
+                                for (i = 0; i < arrayCategory.length; i++) {
+                                    if (insideBlock(codeBlockArray[0].xCoord, codeBlockArray[0].yCoord + codeBlockArray[0].size, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                                        playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                                        blockEffect("recursion");
+                                        return;
+                                    }
+                                    if (insideBlock(codeBlockArray[0].xCoord + codeBlockArray[0].size, codeBlockArray[0].yCoord + codeBlockArray[0].size, arrayCategory[i].xCoord, arrayCategory[i].xCoord + arrayCategory[i].size, arrayCategory[i].yCoord, arrayCategory[i].yCoord + arrayCategory[i].size)) {
+                                        playingField.removeChild(arrayCategory.splice(i, 1)[0].myImg);
+                                        blockEffect("recursion");
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        function sendRequest() {
+            var req = new XMLHttpRequest();
+
+            req.onreadystatechange = function() {
+                if (req.readyState == 4) {
+                    initialize();
+                }
+            }
+
+            var url = "snake_game_results.php?name=" + nameInput.value + "&difficulty=" + gameDifficulty + "&score=" + userScoreVar.value;
+            req.open("GET", url, true);
+            req.send(null);
+        }
+    </script>
+</head>
+
+<body onload="initialize();">
+    <img class="bg" src="images/lambdachair.png" />
+    <h2> <span class = "title">Game of Lambdas</span> </h2>
+    <div class="leftColumn">
+        <img style="opacity:.3;" class="bg" src="images/cool.png" />
+        <b>Controls:</b> Arrow keys move in their respective directions </br>
+        <b>Instructions:</b> Collect Lambdas, Abstractions, and power ups to get a score. Avoid hitting bugs with your code block. Join the leaderboard! </br><b>Default mode is easy</b></br>
+        </br>
+        <b>Settings</b>
+        <hr>
+        <form id="settings" method="post" action="snake_game_results.php">
+            <b> Player Name</b>
+            <input id="nameInput" type="text" name="name" value="Anonymous" />
+            <b>Difficulty:</b>
+            <label>
+                Easy
+                <input type="radio" name="difficulty" value="easy" checked onclick="setDifficulty('easy');" />
+            </label>
+            </br>
+            <label>
+                Medium
+                <input type="radio" name="difficulty" value="medium" onclick="setDifficulty('medium');" />
+            </label>
+            </br>
+            <label>
+                Hard
+                <input type="radio" name="difficulty" value="hard" onclick="setDifficulty('hard');" />
+            </label>
+            </br>
+            <input id="userScore" type="hidden" name="score" />
+        </form>
+        </br>
+        <div id="submit">Game Over! Submit your scores!
+            <button onclick="sendRequest();">Submit</button>
+        </div>
+        <button id="startbutton" onclick="startGame(); this.disabled = true;"> Start the game </button>
+        <form id="scoreNavigator" method="post" action="snake_game_scoreboard.php">
+            <b>Select which scores with a particular difficulty you want to find from the scoreboard:</b>
+            <select id="findScoreByDifficulty" name="findScoreByDifficulty">
+                <option value="any">Any</option>
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+            </select>
+            </br>
+            <span>Go to Scoreboard </span>
+            <input id="goscore" type="submit" />
+        </form>
+        </br>
+        <b>Objects:</b></br>
+        Your code block <img class="youblock" src="images/codeblock.png" /></br>
+        Lambda block <img class="lblock" src="images/lambdablock.png" /></br>
+        Abstraction block <img class="ablock" src="images/abstractionblock.png" /></br>
+        Bug block <img class="bblock" src="images/bugblock.png" /></br>
+        Recursion block <img class="rblock" src="images/recursionblock.png" /></br>
+        here coms dat boi! <img style="width:20%;" src="images/feelsgood.png"> </br>
+        <div class="score"> Your Score: <span id="scoreArea">0</span></div>
+    </div>
+    <div id="mainspace">
+    </div>
+</body>
+
+</html>
