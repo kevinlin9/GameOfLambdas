@@ -27,11 +27,12 @@
             playingField.style.height = (document.body.clientHeight * .9) + "px";
             playingFieldWidth = parseInt(playingField.style.width);
             playingFieldHeight = parseInt(playingField.style.height);
-
+			
             gameDifficulty = "easy";
-            SLOW = 10;
-            FAST = 20;
-            SONIC = 30;
+			
+			SLOW = 20;
+            FAST = 30;
+            SONIC = 40;
             moveSpeed = SLOW;
             playingField.innerHTML = "";
             codeBlockArray = [];
@@ -221,7 +222,7 @@
                     codeBlockArray.push(codeBlock);
                 } else {
                     if (type == "abstraction") {
-                        score += 200;
+                        score += 300;
                         if (moveSpeed < 50)
                             moveSpeed += 1;
                         if (codeBlockArray.length == 1)
@@ -602,7 +603,9 @@
 
             req.onreadystatechange = function() {
                 if (req.readyState == 4) {
-                    initialize();
+                    var saveDifficulty = gameDifficulty;
+					initialize();
+					gameDifficulty = saveDifficulty;					
                 }
             }
 
