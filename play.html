@@ -61,14 +61,16 @@
         }
 
         function startGame() {
-            if (nameInput.value == "memehax") {
+            setMoveSpeed(gameDifficulty);
+			if (nameInput.value == "snap") {
                 bg = document.createElement("img");
                 bg.setAttribute("src", "images/bg.png");
                 bg.setAttribute("class", "bg");
                 playingField.appendChild(bg);
+				moveSpeed = 45;
             }
             settingsForm.style.display = "none";
-            setMoveSpeed(gameDifficulty);
+            
             var codeBlock = new blockObj(playingFieldWidth / 2, playingFieldHeight / 2, "images/codeblock.png", codeBlockArray, 25);
             playingField.appendChild(codeBlock.myImg);
             codeBlockArray.push(codeBlock);
