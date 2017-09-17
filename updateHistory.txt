@@ -1,5 +1,12 @@
 New Additions
 -------------
+9/17/17
+Revamped secret mode. Access secret mode by typing in "snap" as the player name!
+Clearer controls and instructions have been added.
+Game application has been simplified to just gameplay.
+Speeds and difficulties have been re-adjusted for satisfactory gameplay.
+Project status: Finished
+
 9/15/17
 Abstraction blocks points earned 200 -> 300.
 Speed for difficulty has been increased for more enjoyment: Easy 10 -> 20, Medium 20 -> 30, Hard 30 -> 40.
@@ -9,6 +16,5 @@ Introduction page has been added
 
 Bugs
 ----
-Incorrect collision with blocks if moving upwards after moving in other directions.
 Difficulty settings are not remembered after a game. FIXED as of 9/15/17
-Window size does not adapt to different monitor resolutions.
+Window size does not adapt well to different monitor resolutions.
