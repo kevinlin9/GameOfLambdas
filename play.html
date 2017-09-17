@@ -599,18 +599,21 @@
         }
 
         function sendRequest() {
-            var req = new XMLHttpRequest();
+/*            var req = new XMLHttpRequest();
+
             req.onreadystatechange = function() {
                 if (req.readyState == 4) {
-
+*/
                     var saveDifficulty = gameDifficulty;
 					initialize();
 					gameDifficulty = saveDifficulty;					
-              }
+ /*               }
             }
+
             var url = "snake_game_results.php?name=" + nameInput.value + "&difficulty=" + gameDifficulty + "&score=" + userScoreVar.value;
             req.open("GET", url, true);
             req.send(null);
+*/
         }
     </script>
 </head>
@@ -621,7 +624,7 @@
     <div class="leftColumn">
         <img style="opacity:.3;" class="bg" src="images/cool.png" />
         <b>Controls:</b> Use the arrow keys on your keyboard to move up, down, left, or right. Remember to not crash into yourself!</br>
-        <b>Instructions:</b> Run into lambda blocks to score points and extend your code! Abstraction blocks make your code shorter. Beware of Bug blocks as they will break your code and give you a game over. Running into recursion blocks will get rid of bug blocks and speed up your code! Earn as many points as you can! Join the leaderboard! </br><b>Default mode is HARD</b></br>
+        <b>Instructions:</b> Run into lambda blocks to score points and extend your code! Abstraction blocks make your code shorter. Beware of Bug blocks as they will break your code and give you a game over. Running into recursion blocks will get rid of bug blocks and speed up your code! Earn as many points as you can! </br><b>Default mode is HARD</b></br>
         </br>
         <b>Settings</b>
         <hr>
@@ -651,7 +654,7 @@
             <button onclick="sendRequest();">Play Again</button>
         </div>
         <button id="startbutton" onclick="startGame(); this.disabled = true;"> Start the game </button>
-        <form id="scoreNavigator" method="post" action="snake_game_scoreboard.php">
+        <form id="scoreNavigator" method="post" action="snake_game_scoreboard.php" style="display: none;">
             <b>Select which scores with a particular difficulty you want to find from the scoreboard:</b>
             <select id="findScoreByDifficulty" name="findScoreByDifficulty">
                 <option value="any">Any</option>
