@@ -600,15 +600,14 @@
 
         function sendRequest() {
             var req = new XMLHttpRequest();
-
             req.onreadystatechange = function() {
                 if (req.readyState == 4) {
+
                     var saveDifficulty = gameDifficulty;
 					initialize();
 					gameDifficulty = saveDifficulty;					
-                }
+              }
             }
-
             var url = "snake_game_results.php?name=" + nameInput.value + "&difficulty=" + gameDifficulty + "&score=" + userScoreVar.value;
             req.open("GET", url, true);
             req.send(null);
@@ -622,17 +621,17 @@
     <div class="leftColumn">
         <img style="opacity:.3;" class="bg" src="images/cool.png" />
         <b>Controls:</b> Use the arrow keys on your keyboard to move up, down, left, or right. Remember to not crash into yourself!</br>
-        <b>Instructions:</b> Run into lambda blocks to score points and extend your code! Abstraction blocks make your code shorter. Beware of Bug blocks as they will break your code and give you a game over. Running into recursion blocks will get rid of bug blocks and speed up your code! Earn as many points as you can! Join the leaderboard! </br><b>Default mode is easy</b></br>
+        <b>Instructions:</b> Run into lambda blocks to score points and extend your code! Abstraction blocks make your code shorter. Beware of Bug blocks as they will break your code and give you a game over. Running into recursion blocks will get rid of bug blocks and speed up your code! Earn as many points as you can! Join the leaderboard! </br><b>Default mode is HARD</b></br>
         </br>
         <b>Settings</b>
         <hr>
         <form id="settings" method="post" action="snake_game_results.php">
             <b> Player Name</b>
-            <input id="nameInput" type="text" name="name" value="Anonymous" />
+            <input id="nameInput" type="text" name="name" value="Player" />
             <b>Difficulty:</b>
             <label>
                 Easy
-                <input type="radio" name="difficulty" value="easy" checked onclick="setDifficulty('easy');" />
+                <input type="radio" name="difficulty" value="easy" onclick="setDifficulty('easy');" />
             </label>
             </br>
             <label>
@@ -642,14 +641,14 @@
             </br>
             <label>
                 Hard
-                <input type="radio" name="difficulty" value="hard" onclick="setDifficulty('hard');" />
+                <input type="radio" name="difficulty" value="hard" checked onclick="setDifficulty('hard');" />
             </label>
             </br>
             <input id="userScore" type="hidden" name="score" />
         </form>
         </br>
-        <div id="submit">Game Over! Submit your scores!
-            <button onclick="sendRequest();">Submit</button>
+        <div id="submit">Game Over!
+            <button onclick="sendRequest();">Play Again</button>
         </div>
         <button id="startbutton" onclick="startGame(); this.disabled = true;"> Start the game </button>
         <form id="scoreNavigator" method="post" action="snake_game_scoreboard.php">
@@ -665,13 +664,12 @@
             <input id="goscore" type="submit" />
         </form>
         </br>
-        <b>Objects:</b></br>
-        Your code block <img class="youblock" src="images/codeblock.png" /></br>
-        Lambda block <img class="lblock" src="images/lambdablock.png" /></br>
-        Abstraction block <img class="ablock" src="images/abstractionblock.png" /></br>
-        Bug block <img class="bblock" src="images/bugblock.png" /></br>
-        Recursion block <img class="rblock" src="images/recursionblock.png" /></br>
-        here coms dat boi! <img style="width:20%;" src="images/feelsgood.png"> </br>
+        <b>Blocks:</b></br>
+        Your code block <img class="youblock" src="images/codeblock.png"/></br>
+        Lambda block <img class="lblock" src="images/lambdablock.png"/></br>
+        Abstraction block <img class="ablock" src="images/abstractionblock.png"/></br>
+        Bug block <img class="bblock" src="images/bugblock.png"/></br>
+        Recursion block <img class="rblock" src="images/recursionblock.png"/></br>
         <div class="score"> Your Score: <span id="scoreArea">0</span></div>
     </div>
     <div id="mainspace">
